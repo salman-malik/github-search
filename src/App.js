@@ -1,28 +1,29 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import SearchBar from './SearchBar';
+import github from './api/github'
+import RepoList from './RepoList';
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+export default class App extends React.Component {
+    state = { repos: null, user: null }
+    onSearchSubmit = async (term) => {
+        console.log('You searched for: ' + term);
+        const data = await github.getRepos(term);
+        data.sort((a, b) => parseFloat(b.stargazers_count) - parseFloat(a.stargazers_count))
+        
+        this.setState({ repos: data, user: term })
+    }
+    
+
+    render() {
+        return(
+            <div className="ui container" style={{ marginTop:'10px' }}>
+                <SearchBar mySubmit={this.onSearchSubmit}/>
+                {this.state.user && 
+                    <div style={{ alignContent: 'center'}}>
+                        <img alt="" className="ui avatar image" src={this.state.repos[0].owner.avatar_url}></img> <strong>{this.state.user}</strong> 
+                    </div>}
+                <RepoList getRepos={this.state.repos} />
+            </div>
+        );
+    }
 }
-
-export default App;
